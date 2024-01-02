@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 
 #define MAX_SERVERS 10
+#define SERVERS_METADATA_PATH "./servers_metadata.txt"
+#define MAX_PATH_LEN 260
 
 typedef struct server {
     char name[20];
@@ -15,13 +18,13 @@ typedef struct server {
 struct server servers[MAX_SERVERS];
 
 /**
- * @brief Parses server information stored in file specified by file_name. 
- * @param file_name Name of file storing the server data.
- * @return Number of servers parsed, or -1 if file could not be opened.
+ * @brief Loads server metadata stored in file specified by file_path. 
+ * @param file_path Path of file storing the servers metadata.
+ * @return Number of servers loaded, or -1 if file could not be opened.
 */
-int parse_servers_file(char *file_name) {
+int load_servers_metadata(char *file_path) {
     FILE *file;
-    if ((file = fopen(file_name, "r")) == NULL) {
+    if ((file = fopen(file_path, "r")) == NULL) {
         perror("Error opening file");
         return -1;
     }
@@ -30,7 +33,7 @@ int parse_servers_file(char *file_name) {
     int count = 0;
     while (count < MAX_SERVERS && fgets(line, 70, file) != NULL) {
         struct server *s = &servers[count];
-        /* Assuming that the lines of the servers list file are formatted as follows:
+        /* Assumes that the lines of the servers metadata file are formatted as follows:
             NAME ADDRESS PORT
             Example: SERVER_0 127.0.0.1 2000
         */
@@ -41,17 +44,25 @@ int parse_servers_file(char *file_name) {
     return count;
 }
 
+/**
+ * @brief Initializes server metadata by loading from a default metadata file.
+ * If the default metadata file does not exist or is not accessible, then the user is 
+ * prompted to provide the path to another metadata file.
+*/
+void init_servers_metadata() {
+    char metadata_path[MAX_PATH_LEN];
+    strncpy(metadata_path, SERVERS_METADATA_PATH, MAX_PATH_LEN);
 
-int init_servers() {
-    if (parse_servers_file("servers_list.txt") == -1) {
-        // File failed to open
+    while (load_servers_metadata(metadata_path) == -1) {
+        // File failed to open. Prompting user to provide new file or quit.
+        printf("Provide file path to server metadata:\n");
+        fflush(stdin);
+        fgets(metadata_path, MAX_PATH_LEN, stdin);
+        metadata_path[strlen(metadata_path) - 1] = '\0'; // Removing \n
     }
-
-
-    return 0;
 }
 
 int main(int argc, char *argv[]) {
-    init_servers();
+    init_servers_metadata();
     return 0;
 }

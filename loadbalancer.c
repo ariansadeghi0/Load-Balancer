@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define MAX_SERVERS 10
 #define SERVERS_METADATA_PATH "./servers_metadata.txt"
@@ -15,7 +16,7 @@ typedef struct server {
     int max_connections;
 } server;
 
-struct server servers[MAX_SERVERS];
+struct server **servers;
 
 /**
  * @brief Loads server metadata stored in file specified by file_path. 
@@ -32,7 +33,8 @@ int load_servers_metadata(char *file_path) {
     char line[70];
     int count = 0;
     while (count < MAX_SERVERS && fgets(line, 70, file) != NULL) {
-        struct server *s = &servers[count];
+        struct server *s = malloc(sizeof(struct server));
+        servers[count] = s;
         /* Assumes that the lines of the servers metadata file are formatted as follows:
             NAME ADDRESS PORT
             Example: SERVER_0 127.0.0.1 2000
@@ -63,6 +65,11 @@ void init_servers_metadata() {
 }
 
 int main(int argc, char *argv[]) {
+    servers = malloc(MAX_SERVERS * sizeof(struct server));
+    for (int i = 0; i < MAX_SERVERS; i++) servers[i] = NULL;
+
     init_servers_metadata();
+
+    free(servers);
     return 0;
 }

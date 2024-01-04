@@ -74,12 +74,24 @@ void init_servers_metadata() {
 }
 
 
+/**
+ * @brief Deallocates the memory occupied by the server at the specified index.
+ *
+ * @param server_index Index of the server in the servers array.
+ */
 void deallocate_server(int server_index) {
     free(servers[server_index]);
     servers[server_index] = NULL;
 }
 
 
+/**
+ * @brief Establishes a connection to the server specified in the argument.
+ *
+ * Function is to be used as a thread routine.
+ *
+ * @param arg Pointer to the server_details structure containing server information.
+ */
 void *connect_to_server(void *arg) {
     server_details *server = (server_details *)arg;
 
@@ -106,6 +118,11 @@ void *connect_to_server(void *arg) {
 }
 
 
+/**
+ * @brief Establishes connections to all the populated servers in the servers array using threads.
+ *
+ * A seperate thread is created for each server to establish connections concurrently.
+ */
 void connect_to_servers() {
     pthread_t server_threads[MAX_SERVERS];
 
